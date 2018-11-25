@@ -83,7 +83,7 @@
 					// let URL = ["http://api.wunderground.com/auto/wui/geo/WXCurrentObXML/index.xml?query=", [coordinates.latitude, coordinates.longitude].join(',')].join('')
 					let URL = ['https://api.openweathermap.org/data/2.5/weather?appid=0ba3701b17ecf0224c2249dd18f27d68&callback=update&', `lat=${coordinates.latitude}&lon=${coordinates.longitude}`].join('')
 
-					console.log(URL)
+					// console.log(URL)
 
 					$.ajax({
 					    url: URL,
