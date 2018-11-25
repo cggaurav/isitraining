@@ -27,6 +27,15 @@
 			font-size: 25px;
 			font-weight: 300;
 		}
+
+		h3 {
+			color: red;
+			text-align: center;
+			margin-top: 30px;
+			font-size: 20px;
+			font-weight: 400;
+		}
+
 	</style>
 </head>
 <body>
@@ -35,9 +44,18 @@
 
 	<h2 id="notify"> Seems like we won"t be able to help you! </h2>
 
+	<h3 id="name"></h3>
+	<h3 id="rain"></h3>
 
 </body>
 	<script>
+
+		function update(data) {
+			// https://gist.github.com/27e892480a7d9267c145c32b2dce5f0a
+			console.log('RAIN', data)
+			document.getElementById("name").innerHTML = data.name
+			document.getElementById("rain").innerHTML = [data.weather[0].main, data.weather[0].description].join(' ')
+		}
 
 		function bootstrap() {
 			document.getElementById("notify").style.visibility = "hidden"
@@ -45,61 +63,57 @@
 
 		bootstrap()
 
-		if ("geolocation" in navigator) {
+		$(function() {
 
-			var options = {
-				// enableHighAccuracy: true,
-				timeout: 5000,
-				maximumAge: 0
-			};
+			if ("geolocation" in navigator) {
+				var options = {
+					enableHighAccuracy: true,
+					timeout: 5000,
+					maximumAge: 0
+				};
 
-			function success(pos) {
-				var coordinates = pos.coords
+				function success(pos) {
+					var coordinates = pos.coords
 
-				console.log('Your current position is:')
-				console.log(`Latitude : ${coordinates.latitude}`)
-				console.log(`Longitude: ${coordinates.longitude}`)
-				console.log(`More or less ${coordinates.accuracy} meters.`)
+					console.log('Your current position is:')
+					console.log(`Latitude : ${coordinates.latitude}`)
+					console.log(`Longitude: ${coordinates.longitude}`)
+					console.log(`More or less ${coordinates.accuracy} meters.`)
 
-				let URL = ["http://api.wunderground.com/auto/wui/geo/WXCurrentObXML/index.xml?query=", [coordinates.latitude, coordinates.longitude].join(',')].join('')
+					// let URL = ["http://api.wunderground.com/auto/wui/geo/WXCurrentObXML/index.xml?query=", [coordinates.latitude, coordinates.longitude].join(',')].join('')
+					let URL = ['https://api.openweathermap.org/data/2.5/weather?appid=0ba3701b17ecf0224c2249dd18f27d68&callback=update&', `lat=${coordinates.latitude}&lon=${coordinates.longitude}`].join('')
 
-				$.ajax({
-				    url: url,
-				    type: "GET",
-				    crossDomain: true,
-				    contentType: "text/xml",
-				    headers: {
-						"accept": "application/xml",
-						"Access-Control-Allow-Origin":"*"
-				    },
-				    // dataType: "text",
-				    success : (data) => {
-				    	console.log('data', data)
-				    },
-				    error : (xhr, ajaxOptions, thrownError) => {
-				    	console.error(xhr.status)        
-				    	console.error(thrownError)
+					console.log(URL)
 
-				    	document.getElementById("notify").style.visibility = "visible"
-				    } 
-				})
+					$.ajax({
+					    url: URL,
+					    type: "GET",
+					    crossDomain: true,
+					    dataType: 'jsonp',
+					    contentType: "text/json",
+					    success : (data) => {
+					    },
+					    error : (xhr, ajaxOptions, thrownError) => {
+
+					    	// document.getElementById("notify").style.visibility = "visible"
+					    } 
+					})
+				}
+
+				function error(error) {
+				  	console.warn(`ERROR: (${error.code}): ${error.message}`)
+				  	document.getElementById("notify").style.visibility = "visible"
+				}
+				
+				console.log("Lets go")
+
+				navigator.geolocation.getCurrentPosition(success, error, options)
+
+
+			} else {
+			 	document.getElementById("notify").style.visibility = "visible"
 			}
-
-			function error(err) {
-			  	console.warn(`ERROR(${err.code}): ${err.message}`)
-			}
-
-			$(document).ready(() => {
-				// console.log("Lets go")
-				setTimeout(() => {
-					navigator.geolocation.getCurrentPosition(success, error, options)
-				}, 100)
-			})
-
-
-		} else {
-		 	document.getElementById("notify").style.visibility = "visible"
-		}
+		})
 
 	</script>
 </html>
